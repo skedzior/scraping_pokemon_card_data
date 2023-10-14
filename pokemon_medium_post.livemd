@@ -3,8 +3,7 @@
 ```elixir
 Mix.install(
   [
-    {:hound, "~> 1.1"},
-    {:floki, "~> 0.34.3"}
+    {:hound, "~> 1.1"}
   ],
   config: [
     hound: [driver: "chrome_driver"]
