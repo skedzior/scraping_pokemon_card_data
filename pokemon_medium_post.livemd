@@ -1,0 +1,129 @@
+# Pokemon Scraping Medium Post
+
+```elixir
+Mix.install(
+  [
+    {:hound, "~> 1.1"},
+    {:floki, "~> 0.34.3"},
+    {:httpoison, "~> 2.1"}
+  ],
+  config: [
+    hound: [driver: "chrome_driver"]
+  ]
+)
+```
+
+## Section
+
+```elixir
+import Hound.Helpers.{Navigation, Page, Element, ScriptExecution}
+
+Hound.start_session()
+```
+
+```elixir
+tcg =
+  "https://www.tcgplayer.com/search/pokemon/sv01-scarlet-and-violet-base-set?view=list&productLineName=pokemon&setName=sv01-scarlet-and-violet-base-set&ProductTypeName=Cards"
+
+navigate_to(tcg)
+```
+
+```elixir
+find_all_elements(:css, ".search-result__content")
+```
+
+```elixir
+find_all_elements(:css, ".search-result__content")
+|> Enum.at(0)
+|> inner_text()
+```
+
+```elixir
+result = find_all_elements(:css, ".search-result__content") |> Enum.at(0)
+```
+
+```elixir
+title =
+  result
+  |> find_within_element(:class, "search-result__title")
+  |> inner_text()
+```
+
+```elixir
+set =
+  result
+  |> find_within_element(:class, "search-result__subtitle")
+  |> inner_text()
+```
+
+```elixir
+market_price =
+  result
+  |> find_within_element(:class, "search-result__market-price--value")
+  |> inner_text()
+```
+
+```elixir
+rarity =
+  result
+  |> find_within_element(:class, "search-result__rarity")
+  |> inner_text()
+```
+
+```elixir
+img_url =
+  result
+  |> find_within_element(:tag, "img")
+  |> attribute_value("src")
+```
+
+```elixir
+defmodule Utils do
+  use Hound.Helpers
+
+  def extract_text(e, class) do
+    find_within_element(e, :class, class)
+    |> inner_text()
+  end
+
+  def extract_title(e), do: extract_text(e, "search-result__title")
+
+  def extract_set(e), do: extract_text(e, "search-result__subtitle")
+
+  def extract_market_price(e), do: extract_text(e, "search-result__market-price--value")
+
+  def extract_rarity(e), do: extract_text(e, "search-result__rarity")
+
+  def extract_img(e) do
+    find_within_element(e, :tag, "img")
+    |> attribute_value("src")
+  end
+end
+```
+
+```elixir
+import Utils
+
+%{
+  img_url: extract_img(result),
+  title: extract_title(result),
+  set: extract_set(result),
+  rarity: extract_rarity(result),
+  market_price: extract_market_price(result)
+}
+```
+
+```elixir
+find_all_elements(:css, ".search-result__content")
+|> Enum.reduce([], fn r, acc ->
+  Enum.concat(acc, [
+    %{
+      img_url: extract_img(r),
+      title: extract_title(r),
+      set: extract_set(r),
+      rarity: extract_rarity(r),
+      market_price: extract_market_price(r)
+    }
+  ])
+end)
+```
